@@ -107,7 +107,7 @@ def resolve_config_file(path: str | Path) -> Path:
 
 
 def project_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[1]
 
 
 def validate_config(config: dict[str, Any]) -> None:

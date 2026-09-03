@@ -1,25 +1,39 @@
 # Sommelier Refactor Pipeline
 
-This refactor keeps the original `main_original_ASR_MoE.py` intact and adds a debuggable runner under `refactor/`.
+This folder is a standalone debuggable runner. It can be copied or zipped by itself and run without the parent Sommelier checkout for the default Colab sample flow.
 
 ## Run
 
 Real model execution is the default:
 
 ```bash
-HUGGINGFACE_TOKEN=hf_... bash refactor/run_pipeline.sh --input path/to/audio.wav --output outputs/refactor
+bash run_pipeline.sh --config config.colab.json --input samples/sample.wav --output outputs/colab
 ```
 
 Contract-only execution avoids model downloads:
 
 ```bash
-bash refactor/run_pipeline.sh --dry-run --input path/to/audio.wav --output /tmp/sommelier_refactor_debug
+bash run_pipeline.sh --dry-run --input samples/sample.wav --output /tmp/sommelier_refactor_debug
 ```
 
 Stop after one phase:
 
 ```bash
-bash refactor/run_pipeline.sh --dry-run --input path/to/audio.wav --stop-after 02_vad_silero
+bash run_pipeline.sh --dry-run --input samples/sample.wav --stop-after 02_vad_silero
+```
+
+## Colab
+
+Create the uploadable package:
+
+```bash
+bash package_colab.sh
+```
+
+Upload `sommelier_refactor_colab.zip` to Colab, extract it to `/content`, then open `colab.ipynb` from the extracted folder. The notebook installs the minimal dependencies, verifies `samples/sample.wav`, and runs:
+
+```bash
+PYTHON_BIN=python bash run_pipeline.sh --config config.colab.json --input samples/sample.wav --output outputs/colab
 ```
 
 ## Phase Artifacts
@@ -39,9 +53,7 @@ The model table printed at startup shows phase, enabled state, backend, model, d
 
 ## Models
 
-Models are configured in `refactor/config.json`:
+Models are configured in JSON files:
 
-- VAD: `Silero_VAD`
-- Diarization: `pyannote/speaker-diarization-community-1`
-- Overlap separation: local `SepReformer`
-
+- `config.colab.json`: real Silero VAD on `samples/sample.wav`; diarization and SepReformer are disabled so the package runs standalone without a Hugging Face token or external model checkout.
+- `config.json`: full debug pipeline config; enable diarization with `HUGGINGFACE_TOKEN` and provide a valid SepReformer path before full real execution.

@@ -1,7 +1,7 @@
 {
   "input": {
     "path": "samples/sample.wav",
-    "output_root": "outputs",
+    "output_root": "outputs/colab",
     "sample_rate": 16000,
     "extensions": [".wav", ".mp3", ".flac", ".m4a", ".aac", ".opus", ".ogg"]
   },
@@ -23,19 +23,20 @@
       "backend": "silero",
       "model": "silero_vad",
       "source": "github",
+      "repo": "snakers4/silero-vad",
       "threshold": 0.35,
       "min_speech_duration_ms": 250,
       "min_silence_duration_ms": 100
     },
     "diarization": {
-      "enabled": true,
+      "enabled": false,
       "backend": "pyannote",
       "model": "pyannote/speaker-diarization-community-1",
       "token_env": "HUGGINGFACE_TOKEN",
       "max_speakers": 4
     },
     "overlap_separation": {
-      "enabled": true,
+      "enabled": false,
       "backend": "sepreformer",
       "model": "SepReformer_Base_WSJ0",
       "path": "../SepReformer",

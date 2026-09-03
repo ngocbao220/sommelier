@@ -22,7 +22,7 @@ def utc_now() -> str:
 
 
 def project_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[1]
 
 
 def ensure_project_imports() -> None:
