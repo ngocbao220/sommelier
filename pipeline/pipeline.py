@@ -5,10 +5,10 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
 
-from pipeline_debug.audio import load_audio, slice_audio, write_audio_artifact
-from pipeline_debug.contracts import PhaseResult, artifact_for_path
-from pipeline_debug.diarization import PyannoteDiarizationAdapter
-from pipeline_debug.io_utils import (
+from pipeline.audio import load_audio, slice_audio, write_audio_artifact
+from pipeline.contracts import PhaseResult, artifact_for_path
+from pipeline.diarization import PyannoteDiarizationAdapter
+from pipeline.io_utils import (
     collect_audio_paths,
     make_run_dir,
     print_model_table,
@@ -18,9 +18,9 @@ from pipeline_debug.io_utils import (
     write_phase_result,
     write_wav,
 )
-from pipeline_debug.overlap import detect_overlaps
-from pipeline_debug.sepreformer import SepReformerAdapter
-from pipeline_debug.vad import SileroVadAdapter
+from pipeline.overlap import detect_overlaps
+from pipeline.sepreformer import SepReformerAdapter
+from pipeline.vad import SileroVadAdapter
 
 
 PHASE_ORDER = [

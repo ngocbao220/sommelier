@@ -4,7 +4,7 @@ import unittest
 import json
 from pathlib import Path
 
-from pipeline_debug.config import load_config, prepare_config, redact_model_config
+from pipeline.config import load_config, prepare_config, redact_model_config
 
 
 class ConfigTests(unittest.TestCase):

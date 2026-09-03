@@ -3,9 +3,9 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from pipeline_debug.config import load_config, prepare_config, validate_config
-from pipeline_debug.io_utils import resolve_device
-from pipeline_debug.pipeline import DebugPipeline
+from pipeline.config import load_config, prepare_config, validate_config
+from pipeline.io_utils import resolve_device
+from pipeline.pipeline import DebugPipeline
 
 
 def parse_args() -> argparse.Namespace:

@@ -13,8 +13,8 @@ from typing import Any
 
 import numpy as np
 
-from pipeline_debug.config import MODEL_PHASES
-from pipeline_debug.contracts import PhaseResult, Segment
+from pipeline.config import MODEL_PHASES
+from pipeline.contracts import PhaseResult, Segment
 
 
 def utc_now() -> str:
@@ -22,7 +22,7 @@ def utc_now() -> str:
 
 
 def project_root() -> Path:
-    return Path(__file__).resolve().parents[2]
+    return Path(__file__).resolve().parents[1]
 
 
 def ensure_project_imports() -> None:

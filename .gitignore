@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Pipeline outputs and local artifacts
+outputs/
+logs/
+tmp/
+*.temp.*
+
+# Local secrets
+.env
+.env.*
+!.env.example

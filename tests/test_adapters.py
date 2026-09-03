@@ -2,11 +2,11 @@ import unittest
 
 import numpy as np
 
-from pipeline_debug.diarization import annotation_to_segments
-from pipeline_debug.overlap import detect_overlaps
-from pipeline_debug.sepreformer import SepReformerAdapter
-from pipeline_debug.vad import SileroVadAdapter
-from pipeline_debug.contracts import Segment
+from pipeline.diarization import annotation_to_segments
+from pipeline.overlap import detect_overlaps
+from pipeline.sepreformer import SepReformerAdapter
+from pipeline.vad import SileroVadAdapter
+from pipeline.contracts import Segment
 
 
 class FakeTurn:
@@ -60,4 +60,3 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(len(overlaps), 1)
         self.assertEqual(set(enhanced), {"00000", "00001"})
         self.assertTrue(updated[0].flags["sepreformer"])
-

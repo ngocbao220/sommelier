@@ -7,10 +7,10 @@ from typing import Any
 
 import numpy as np
 
-from pipeline_debug.audio import slice_audio
-from pipeline_debug.contracts import Segment
-from pipeline_debug.io_utils import ensure_project_imports
-from pipeline_debug.overlap import detect_overlaps
+from pipeline.audio import slice_audio
+from pipeline.contracts import Segment
+from pipeline.io_utils import ensure_project_imports
+from pipeline.overlap import detect_overlaps
 
 
 class _NullLogger:

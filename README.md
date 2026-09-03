@@ -1,25 +1,27 @@
-# Sommelier Refactor Pipeline
+# Vietnamese Sommelier Pipeline
 
-This refactor keeps the original `main_original_ASR_MoE.py` intact and adds a debuggable runner under `refactor/`.
+This repository contains the debuggable Vietnamese Sommelier runner and its local `pipeline/` package. The shell entrypoint is self-contained: it runs `run_pipeline.py` from this checkout instead of importing code from a neighboring `sommelier` or `refactor` directory.
 
 ## Run
 
 Real model execution is the default:
 
 ```bash
-HUGGINGFACE_TOKEN=hf_... bash refactor/run_pipeline.sh --input path/to/audio.wav --output outputs/refactor
+HUGGINGFACE_TOKEN=hf_... bash run_pipeline.sh --input path/to/audio.wav --output outputs
 ```
+
+Use `PYTHON_BIN=/path/to/python` if you want to run with a specific environment.
 
 Contract-only execution avoids model downloads:
 
 ```bash
-bash refactor/run_pipeline.sh --dry-run --input path/to/audio.wav --output /tmp/sommelier_refactor_debug
+bash run_pipeline.sh --dry-run --input path/to/audio.wav --output /tmp/vi_sommelier_debug
 ```
 
 Stop after one phase:
 
 ```bash
-bash refactor/run_pipeline.sh --dry-run --input path/to/audio.wav --stop-after 02_vad_silero
+bash run_pipeline.sh --dry-run --input path/to/audio.wav --stop-after 02_vad_silero
 ```
 
 ## Phase Artifacts
@@ -39,9 +41,8 @@ The model table printed at startup shows phase, enabled state, backend, model, d
 
 ## Models
 
-Models are configured in `refactor/config.json`:
+Models are configured in `config.json`:
 
 - VAD: `Silero_VAD`
 - Diarization: `pyannote/speaker-diarization-community-1`
 - Overlap separation: local `SepReformer`
-

@@ -1,7 +1,7 @@
 import json
 import unittest
 
-from pipeline_debug.contracts import PhaseResult, Segment
+from pipeline.contracts import PhaseResult, Segment
 
 
 class ContractTests(unittest.TestCase):
@@ -31,4 +31,3 @@ class ContractTests(unittest.TestCase):
         payload = result.to_json()
         json.dumps(payload)
         self.assertEqual(payload["phase"], "02_vad_silero")
-

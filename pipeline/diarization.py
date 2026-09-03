@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from pipeline_debug.contracts import Segment
+from pipeline.contracts import Segment
 
 
 @dataclass

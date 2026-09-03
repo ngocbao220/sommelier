@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pipeline_debug.contracts import Segment
+from pipeline.contracts import Segment
 
 
 def detect_overlaps(segments: list[Segment], threshold_seconds: float) -> list[dict]:
@@ -26,4 +26,3 @@ def detect_overlaps(segments: list[Segment], threshold_seconds: float) -> list[d
                     }
                 )
     return overlaps
-

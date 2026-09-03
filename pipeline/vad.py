@@ -5,8 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from pipeline_debug.contracts import Segment
-from pipeline_debug.io_utils import ensure_project_imports
+from pipeline.contracts import Segment
 
 
 @dataclass
@@ -15,6 +14,7 @@ class SileroVadAdapter:
     device: str
     mode: str = "real"
     _model: Any = None
+    _get_speech_timestamps: Any = None
 
     @property
     def model_info(self) -> dict[str, Any]:
@@ -29,15 +29,16 @@ class SileroVadAdapter:
     def load(self) -> None:
         if self.mode == "dry_run" or self._model is not None:
             return
-        ensure_project_imports()
         import torch
-        from models import silero_vad
 
-        self._model = silero_vad.SileroVAD(
-            local=self.config.get("source") == "local",
+        model, utils = torch.hub.load(
+            repo_or_dir=self.config.get("repo", "snakers4/silero-vad"),
             model=self.config.get("model", "silero_vad"),
-            device=torch.device(self.device),
+            source=self.config.get("source", "github"),
+            trust_repo=True,
         )
+        self._model = model.to(torch.device(self.device))
+        self._get_speech_timestamps = utils[0]
 
     def run(self, audio: dict) -> list[Segment]:
         duration = len(audio["waveform"]) / int(audio["sample_rate"])
@@ -63,6 +64,7 @@ class SileroVadAdapter:
 
             waveform = librosa.resample(waveform, orig_sr=sample_rate, target_sr=16000)
             sample_rate = 16000
+        import torch
 
         kwargs = {
             "sampling_rate": sample_rate,
@@ -70,7 +72,8 @@ class SileroVadAdapter:
             "min_speech_duration_ms": int(self.config.get("min_speech_duration_ms", 250)),
             "min_silence_duration_ms": int(self.config.get("min_silence_duration_ms", 100)),
         }
-        timestamps = self._model.get_speech_timestamps(waveform, self._model.vad_model, **kwargs)
+        tensor = torch.from_numpy(waveform).to(torch.device(self.device))
+        timestamps = self._get_speech_timestamps(tensor, self._model, **kwargs)
         segments = []
         for idx, timestamp in enumerate(timestamps):
             segments.append(

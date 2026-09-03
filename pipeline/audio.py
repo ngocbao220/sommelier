@@ -4,8 +4,8 @@ from pathlib import Path
 
 import numpy as np
 
-from pipeline_debug.contracts import PipelineArtifact, artifact_for_path
-from pipeline_debug.io_utils import write_wav
+from pipeline.contracts import PipelineArtifact, artifact_for_path
+from pipeline.io_utils import write_wav
 
 
 class AudioData(dict):
@@ -73,4 +73,3 @@ def write_audio_artifact(path: Path, audio: AudioData | dict,
     write_wav(path, data, int(audio["sample_rate"]))
     duration = len(data) / int(audio["sample_rate"]) if int(audio["sample_rate"]) else 0.0
     return artifact_for_path(path, "audio/wav", int(audio["sample_rate"]), duration)
-
