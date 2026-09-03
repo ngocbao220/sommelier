@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from pipeline.compat import ensure_torchvision_import_safe
 from pipeline.contracts import Segment
 
 
@@ -36,6 +37,7 @@ class PyannoteDiarizationAdapter:
             raise RuntimeError(f"missing Hugging Face token: set {token_env}")
 
         import torch
+        ensure_torchvision_import_safe()
         from pyannote.audio import Pipeline
 
         model_name = self.config.get("model", "pyannote/speaker-diarization-community-1")
