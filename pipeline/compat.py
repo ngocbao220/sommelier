@@ -23,6 +23,7 @@ class _UnavailableObject:
 def ensure_pyannote_import_safe() -> None:
     ensure_torchvision_import_safe()
     ensure_torchaudio_metadata_safe()
+    ensure_huggingface_hub_token_safe()
 
 
 def ensure_torchvision_import_safe() -> None:
@@ -47,6 +48,32 @@ def ensure_torchaudio_metadata_safe() -> None:
         )
     if not hasattr(torchaudio, "list_audio_backends"):
         torchaudio.list_audio_backends = lambda: ["soundfile"]  # type: ignore[attr-defined]
+
+
+def ensure_huggingface_hub_token_safe() -> None:
+    try:
+        import huggingface_hub
+        from huggingface_hub import file_download
+    except Exception:
+        return
+    _patch_hf_hub_download_module(huggingface_hub)
+    _patch_hf_hub_download_module(file_download)
+
+
+def _patch_hf_hub_download_module(module: types.ModuleType) -> None:
+    original = getattr(module, "hf_hub_download", None)
+    if original is None or getattr(original, "_sommelier_token_compat", False):
+        return
+
+    def hf_hub_download_token_compat(*args: object, **kwargs: object) -> object:
+        if "use_auth_token" in kwargs and "token" not in kwargs:
+            kwargs["token"] = kwargs.pop("use_auth_token")
+        else:
+            kwargs.pop("use_auth_token", None)
+        return original(*args, **kwargs)
+
+    hf_hub_download_token_compat._sommelier_token_compat = True  # type: ignore[attr-defined]
+    module.hf_hub_download = hf_hub_download_token_compat
 
 
 def _install_unavailable_torchvision_stub(original_error: Exception) -> None:
