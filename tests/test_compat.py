@@ -47,3 +47,4 @@ class CompatTests(unittest.TestCase):
 
         self.assertEqual(metadata.sample_rate, 16000)
         self.assertEqual(metadata.num_frames, 32000)
+        self.assertEqual(fake_torchaudio.list_audio_backends(), ["soundfile"])

@@ -38,12 +38,15 @@ def ensure_torchaudio_metadata_safe() -> None:
     except Exception:
         return
     if hasattr(torchaudio, "AudioMetaData"):
-        return
-    torchaudio.AudioMetaData = namedtuple(  # type: ignore[attr-defined]
-        "AudioMetaData",
-        ["sample_rate", "num_frames", "num_channels", "bits_per_sample", "encoding"],
-        defaults=[0, 0, 0, 0, "UNKNOWN"],
-    )
+        pass
+    else:
+        torchaudio.AudioMetaData = namedtuple(  # type: ignore[attr-defined]
+            "AudioMetaData",
+            ["sample_rate", "num_frames", "num_channels", "bits_per_sample", "encoding"],
+            defaults=[0, 0, 0, 0, "UNKNOWN"],
+        )
+    if not hasattr(torchaudio, "list_audio_backends"):
+        torchaudio.list_audio_backends = lambda: ["soundfile"]  # type: ignore[attr-defined]
 
 
 def _install_unavailable_torchvision_stub(original_error: Exception) -> None:
