@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import os
+import inspect
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from pipeline.compat import ensure_pyannote_import_safe
+from pipeline.compat import ensure_pyannote_import_safe, ensure_pyannote_pipeline_runtime_safe
 from pipeline.contracts import Segment
 
 
@@ -39,12 +40,10 @@ class PyannoteDiarizationAdapter:
         import torch
         ensure_pyannote_import_safe()
         from pyannote.audio import Pipeline
+        ensure_pyannote_pipeline_runtime_safe()
 
         model_name = self.config.get("model", "pyannote/speaker-diarization-community-1")
-        try:
-            self._pipeline = Pipeline.from_pretrained(model_name, token=token)
-        except TypeError:
-            self._pipeline = Pipeline.from_pretrained(model_name, use_auth_token=token)
+        self._pipeline = _pipeline_from_pretrained(Pipeline, model_name, token)
         if hasattr(self._pipeline, "to"):
             self._pipeline.to(torch.device(self.device))
 
@@ -109,3 +108,10 @@ def _speaker_annotation(output: Any) -> Any:
         f"unsupported diarization output {output_type}: expected Annotation-like object "
         f"with itertracks() or speaker_diarization; available attributes: {available or 'none'}"
     )
+
+
+def _pipeline_from_pretrained(pipeline_cls: Any, model_name: str, token: str) -> Any:
+    signature = inspect.signature(pipeline_cls.from_pretrained)
+    if "token" in signature.parameters:
+        return pipeline_cls.from_pretrained(model_name, token=token)
+    return pipeline_cls.from_pretrained(model_name, use_auth_token=token)

@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from pipeline.compat import (
     _install_unavailable_torchvision_stub,
+    _patch_constructor_unsupported_kwargs,
     ensure_huggingface_hub_token_safe,
     ensure_torchaudio_metadata_safe,
 )
@@ -79,3 +80,15 @@ class CompatTests(unittest.TestCase):
 
         self.assertEqual(calls[0][1], {"token": "hf_x"})
         self.assertEqual(calls[1][1], {"token": "hf_y"})
+
+    def test_constructor_patch_drops_unsupported_kwargs(self):
+        calls = []
+
+        class FakeSpeakerDiarization:
+            def __init__(self, segmentation=None):
+                calls.append(segmentation)
+
+        _patch_constructor_unsupported_kwargs(FakeSpeakerDiarization)
+        FakeSpeakerDiarization(segmentation="model", plda="unsupported")
+
+        self.assertEqual(calls, ["model"])
