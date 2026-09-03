@@ -7,6 +7,7 @@ from pipeline.compat import (
     _install_unavailable_torchvision_stub,
     _patch_constructor_unsupported_kwargs,
     ensure_huggingface_hub_token_safe,
+    ensure_torch_load_pyannote_safe,
     ensure_torchaudio_metadata_safe,
     pyannote_model_context,
 )
@@ -126,3 +127,22 @@ class CompatTests(unittest.TestCase):
         FakeSpeakerDiarization(segmentation="model", plda="unsupported")
 
         self.assertEqual(calls, ["model"])
+
+    def test_torch_load_sets_weights_only_false_only_in_pyannote_context(self):
+        calls = []
+
+        def fake_load(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "loaded"
+
+        fake_torch = types.SimpleNamespace(load=fake_load)
+        with patch.dict(sys.modules, {"torch": fake_torch}):
+            ensure_torch_load_pyannote_safe()
+            self.assertEqual(fake_torch.load("outside.pt"), "loaded")
+            with pyannote_model_context("pyannote/speaker-diarization-community-1"):
+                self.assertEqual(fake_torch.load("inside.pt"), "loaded")
+                self.assertEqual(fake_torch.load("explicit.pt", weights_only=True), "loaded")
+
+        self.assertEqual(calls[0][1], {})
+        self.assertEqual(calls[1][1], {"weights_only": False})
+        self.assertEqual(calls[2][1], {"weights_only": True})

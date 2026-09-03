@@ -30,6 +30,7 @@ def ensure_pyannote_import_safe() -> None:
     ensure_torchvision_import_safe()
     ensure_torchaudio_metadata_safe()
     ensure_huggingface_hub_token_safe()
+    ensure_torch_load_pyannote_safe()
 
 
 @contextmanager
@@ -73,6 +74,24 @@ def ensure_huggingface_hub_token_safe() -> None:
         return
     _patch_hf_hub_download_module(huggingface_hub)
     _patch_hf_hub_download_module(file_download)
+
+
+def ensure_torch_load_pyannote_safe() -> None:
+    try:
+        import torch
+    except Exception:
+        return
+    original = getattr(torch, "load", None)
+    if original is None or getattr(original, "_sommelier_weights_only_compat", False):
+        return
+
+    def torch_load_weights_compat(*args: object, **kwargs: object) -> object:
+        if _MODEL_CONTEXT and "weights_only" not in kwargs:
+            kwargs["weights_only"] = False
+        return original(*args, **kwargs)
+
+    torch_load_weights_compat._sommelier_weights_only_compat = True  # type: ignore[attr-defined]
+    torch.load = torch_load_weights_compat  # type: ignore[method-assign]
 
 
 def _patch_hf_hub_download_module(module: types.ModuleType) -> None:
