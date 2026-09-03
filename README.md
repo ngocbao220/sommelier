@@ -4,6 +4,12 @@ This repository contains the debuggable Vietnamese Sommelier runner and its loca
 
 ## Run
 
+Install dependencies in your own Python environment:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
 Real model execution is the default:
 
 ```bash

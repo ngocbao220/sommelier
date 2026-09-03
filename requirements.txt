@@ -1,0 +1,12 @@
+# Core runtime used by dry-run/debug pipeline paths.
+numpy>=1.24
+librosa>=0.10
+soundfile>=0.12
+tqdm>=4.66
+pandas>=2.0
+
+# Real model backends.
+torch>=2.1
+torchaudio>=2.1
+pyannote.audio>=3.1
+huggingface-hub>=0.20

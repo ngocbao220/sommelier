@@ -5,6 +5,7 @@ import math
 import os
 import random
 import sys
+import warnings
 from contextlib import redirect_stderr
 from datetime import datetime, timezone
 from io import StringIO
@@ -32,17 +33,24 @@ def ensure_project_imports() -> None:
 
 
 def resolve_device(name: str) -> str:
-    requested = "cuda" if name == "gpu" else name
+    requested = (name or "auto").strip().lower()
+    if requested == "gpu":
+        requested = "cuda"
     if requested == "auto":
-        try:
-            import torch
-
-            if torch.cuda.is_available():
-                return "cuda"
-        except Exception:
-            pass
+        return "cuda" if _cuda_available() else "cpu"
+    if requested == "cuda" and not _cuda_available():
+        warnings.warn("CUDA requested but unavailable; falling back to CPU.", RuntimeWarning)
         return "cpu"
     return requested
+
+
+def _cuda_available() -> bool:
+    try:
+        import torch
+
+        return bool(torch.cuda.is_available())
+    except Exception:
+        return False
 
 
 def set_seed(seed: int) -> None:
