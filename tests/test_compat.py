@@ -8,6 +8,7 @@ from pipeline.compat import (
     _patch_constructor_unsupported_kwargs,
     ensure_huggingface_hub_token_safe,
     ensure_torchaudio_metadata_safe,
+    pyannote_model_context,
 )
 
 
@@ -80,6 +81,39 @@ class CompatTests(unittest.TestCase):
 
         self.assertEqual(calls[0][1], {"token": "hf_x"})
         self.assertEqual(calls[1][1], {"token": "hf_y"})
+
+    def test_huggingface_download_rewrites_model_subfolder_placeholder(self):
+        calls = []
+
+        def fake_download(*args, **kwargs):
+            calls.append((args, kwargs))
+            return "ok"
+
+        fake_hub = types.ModuleType("huggingface_hub")
+        fake_file_download = types.ModuleType("huggingface_hub.file_download")
+        fake_hub.hf_hub_download = fake_download
+        fake_file_download.hf_hub_download = fake_download
+        fake_hub.file_download = fake_file_download
+
+        with patch.dict(
+            sys.modules,
+            {
+                "huggingface_hub": fake_hub,
+                "huggingface_hub.file_download": fake_file_download,
+            },
+        ):
+            ensure_huggingface_hub_token_safe()
+            with pyannote_model_context("pyannote/speaker-diarization-community-1"):
+                self.assertEqual(fake_hub.hf_hub_download("$model/segmentation", filename="pytorch_model.bin"), "ok")
+                self.assertEqual(
+                    fake_file_download.hf_hub_download(repo_id="$model/embedding", filename="pytorch_model.bin"),
+                    "ok",
+                )
+
+        self.assertEqual(calls[0][0], ("pyannote/speaker-diarization-community-1",))
+        self.assertEqual(calls[0][1]["subfolder"], "segmentation")
+        self.assertEqual(calls[1][1]["repo_id"], "pyannote/speaker-diarization-community-1")
+        self.assertEqual(calls[1][1]["subfolder"], "embedding")
 
     def test_constructor_patch_drops_unsupported_kwargs(self):
         calls = []

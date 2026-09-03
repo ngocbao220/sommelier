@@ -6,7 +6,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from pipeline.compat import ensure_pyannote_import_safe, ensure_pyannote_pipeline_runtime_safe
+from pipeline.compat import (
+    ensure_pyannote_import_safe,
+    ensure_pyannote_pipeline_runtime_safe,
+    pyannote_model_context,
+)
 from pipeline.contracts import Segment
 
 
@@ -112,6 +116,7 @@ def _speaker_annotation(output: Any) -> Any:
 
 def _pipeline_from_pretrained(pipeline_cls: Any, model_name: str, token: str) -> Any:
     signature = inspect.signature(pipeline_cls.from_pretrained)
-    if "token" in signature.parameters:
-        return pipeline_cls.from_pretrained(model_name, token=token)
-    return pipeline_cls.from_pretrained(model_name, use_auth_token=token)
+    with pyannote_model_context(model_name):
+        if "token" in signature.parameters:
+            return pipeline_cls.from_pretrained(model_name, token=token)
+        return pipeline_cls.from_pretrained(model_name, use_auth_token=token)

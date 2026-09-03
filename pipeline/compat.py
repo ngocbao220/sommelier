@@ -4,7 +4,12 @@ import importlib.machinery
 import inspect
 import sys
 import types
+from contextlib import contextmanager
 from collections import namedtuple
+from typing import Iterator
+
+
+_MODEL_CONTEXT: list[str] = []
 
 
 class _UnavailableObject:
@@ -25,6 +30,15 @@ def ensure_pyannote_import_safe() -> None:
     ensure_torchvision_import_safe()
     ensure_torchaudio_metadata_safe()
     ensure_huggingface_hub_token_safe()
+
+
+@contextmanager
+def pyannote_model_context(model_name: str) -> Iterator[None]:
+    _MODEL_CONTEXT.append(model_name)
+    try:
+        yield
+    finally:
+        _MODEL_CONTEXT.pop()
 
 
 def ensure_torchvision_import_safe() -> None:
@@ -71,10 +85,33 @@ def _patch_hf_hub_download_module(module: types.ModuleType) -> None:
             kwargs["token"] = kwargs.pop("use_auth_token")
         else:
             kwargs.pop("use_auth_token", None)
+        args, kwargs = _rewrite_model_placeholder(args, kwargs)
         return original(*args, **kwargs)
 
     hf_hub_download_token_compat._sommelier_token_compat = True  # type: ignore[attr-defined]
     module.hf_hub_download = hf_hub_download_token_compat
+
+
+def _rewrite_model_placeholder(
+    args: tuple[object, ...],
+    kwargs: dict[str, object],
+) -> tuple[tuple[object, ...], dict[str, object]]:
+    repo_id = kwargs.get("repo_id")
+    positional = False
+    if repo_id is None and args:
+        repo_id = args[0]
+        positional = True
+    if not isinstance(repo_id, str) or not repo_id.startswith("$model/") or not _MODEL_CONTEXT:
+        return args, kwargs
+
+    subfolder = repo_id.split("/", 1)[1]
+    replacement = _MODEL_CONTEXT[-1]
+    if positional:
+        args = (replacement, *args[1:])
+    else:
+        kwargs["repo_id"] = replacement
+    kwargs.setdefault("subfolder", subfolder)
+    return args, kwargs
 
 
 def ensure_pyannote_pipeline_runtime_safe() -> None:
