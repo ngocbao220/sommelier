@@ -1,0 +1,47 @@
+{
+  "input": {
+    "path": "samples",
+    "output_root": "outputs",
+    "sample_rate": 16000,
+    "extensions": [".wav", ".mp3", ".flac", ".m4a", ".aac", ".opus", ".ogg"]
+  },
+  "runtime": {
+    "mode": "real",
+    "device": "auto",
+    "log_level": "INFO",
+    "seed": 42,
+    "stop_after": ""
+  },
+  "debug": {
+    "save_json": true,
+    "save_wav": true,
+    "keep_temp": false
+  },
+  "models": {
+    "vad": {
+      "enabled": true,
+      "backend": "silero",
+      "model": "silero_vad",
+      "source": "github",
+      "threshold": 0.35,
+      "min_speech_duration_ms": 250,
+      "min_silence_duration_ms": 100
+    },
+    "diarization": {
+      "enabled": true,
+      "backend": "pyannote",
+      "model": "pyannote/speaker-diarization-community-1",
+      "token_env": "HUGGINGFACE_TOKEN",
+      "max_speakers": 4
+    },
+    "overlap_separation": {
+      "enabled": true,
+      "backend": "sepreformer",
+      "model": "SepReformer_Base_WSJ0",
+      "path": "../SepReformer",
+      "overlap_threshold_seconds": 1.0,
+      "embedding_model": "pyannote/embedding",
+      "token_env": "HUGGINGFACE_TOKEN"
+    }
+  }
+}
