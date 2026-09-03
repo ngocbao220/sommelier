@@ -73,6 +73,7 @@ class PyannoteDiarizationAdapter:
 
 
 def annotation_to_segments(annotation: Any) -> list[Segment]:
+    annotation = _speaker_annotation(annotation)
     rows = list(annotation.itertracks(yield_label=True))
     segments = []
     for idx, (turn, _track, speaker) in enumerate(rows):
@@ -87,3 +88,22 @@ def annotation_to_segments(annotation: Any) -> list[Segment]:
             )
         )
     return segments
+
+
+def _speaker_annotation(output: Any) -> Any:
+    if hasattr(output, "itertracks"):
+        return output
+    for attr in ("speaker_diarization", "exclusive_speaker_diarization"):
+        annotation = getattr(output, attr, None)
+        if annotation is not None and hasattr(annotation, "itertracks"):
+            return annotation
+    output_type = type(output).__name__
+    available = ", ".join(
+        name
+        for name in dir(output)
+        if not name.startswith("_") and not callable(getattr(output, name, None))
+    )
+    raise TypeError(
+        f"unsupported diarization output {output_type}: expected Annotation-like object "
+        f"with itertracks() or speaker_diarization; available attributes: {available or 'none'}"
+    )

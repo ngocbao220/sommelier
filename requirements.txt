@@ -8,5 +8,5 @@ pandas>=2.0
 # Real model backends.
 torch>=2.1
 torchaudio>=2.1
-pyannote.audio>=3.1
+pyannote.audio>=4.0
 huggingface-hub>=0.20

@@ -24,12 +24,22 @@ class FakeAnnotation:
         ]
 
 
+class FakeDiarizeOutput:
+    def __init__(self):
+        self.speaker_diarization = FakeAnnotation()
+
+
 class AdapterTests(unittest.TestCase):
     def test_annotation_to_segments(self):
         segments = annotation_to_segments(FakeAnnotation())
         self.assertEqual(len(segments), 2)
         self.assertEqual(segments[0].speaker, "SPEAKER_00")
         self.assertEqual(segments[1].start, 0.5)
+
+    def test_annotation_to_segments_accepts_pyannote_diarize_output(self):
+        segments = annotation_to_segments(FakeDiarizeOutput())
+        self.assertEqual(len(segments), 2)
+        self.assertEqual(segments[0].speaker, "SPEAKER_00")
 
     def test_detect_overlaps(self):
         overlaps = detect_overlaps(
