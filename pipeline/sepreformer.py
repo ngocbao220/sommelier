@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 
 from pipeline.audio import slice_audio
-from pipeline.compat import ensure_torchvision_import_safe
+from pipeline.compat import ensure_pyannote_import_safe
 from pipeline.contracts import Segment
 from pipeline.io_utils import ensure_project_imports
 from pipeline.overlap import detect_overlaps
@@ -52,7 +52,7 @@ class SepReformerAdapter:
             return
         ensure_project_imports()
         import torch
-        ensure_torchvision_import_safe()
+        ensure_pyannote_import_safe()
         from pyannote.audio import Model as PyannoteModel
         from utils.separation import SepReformerSeparator
 

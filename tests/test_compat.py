@@ -1,7 +1,9 @@
 import sys
+import types
 import unittest
+from unittest.mock import patch
 
-from pipeline.compat import _install_unavailable_torchvision_stub
+from pipeline.compat import _install_unavailable_torchvision_stub, ensure_torchaudio_metadata_safe
 
 
 class CompatTests(unittest.TestCase):
@@ -29,3 +31,19 @@ class CompatTests(unittest.TestCase):
                 if name == "torchvision" or name.startswith("torchvision."):
                     sys.modules.pop(name, None)
             sys.modules.update(original_modules)
+
+    def test_torchaudio_metadata_is_restored_when_missing(self):
+        fake_torchaudio = types.SimpleNamespace()
+
+        with patch.dict(sys.modules, {"torchaudio": fake_torchaudio}):
+            ensure_torchaudio_metadata_safe()
+            metadata = fake_torchaudio.AudioMetaData(
+                sample_rate=16000,
+                num_frames=32000,
+                num_channels=1,
+                bits_per_sample=16,
+                encoding="PCM_S",
+            )
+
+        self.assertEqual(metadata.sample_rate, 16000)
+        self.assertEqual(metadata.num_frames, 32000)

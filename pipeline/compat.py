@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib.machinery
 import sys
 import types
+from collections import namedtuple
 
 
 class _UnavailableObject:
@@ -19,11 +20,30 @@ class _UnavailableObject:
         return self
 
 
+def ensure_pyannote_import_safe() -> None:
+    ensure_torchvision_import_safe()
+    ensure_torchaudio_metadata_safe()
+
+
 def ensure_torchvision_import_safe() -> None:
     try:
         import torchvision  # noqa: F401
     except Exception as exc:
         _install_unavailable_torchvision_stub(exc)
+
+
+def ensure_torchaudio_metadata_safe() -> None:
+    try:
+        import torchaudio
+    except Exception:
+        return
+    if hasattr(torchaudio, "AudioMetaData"):
+        return
+    torchaudio.AudioMetaData = namedtuple(  # type: ignore[attr-defined]
+        "AudioMetaData",
+        ["sample_rate", "num_frames", "num_channels", "bits_per_sample", "encoding"],
+        defaults=[0, 0, 0, 0, "UNKNOWN"],
+    )
 
 
 def _install_unavailable_torchvision_stub(original_error: Exception) -> None:
